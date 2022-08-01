@@ -1,4 +1,7 @@
-# MicroPython Plugin for PyCharm and IntelliJ
+# MicroPython IntelliJ Plugin 4 Pros
+
+**⚠ This page is under construction ⚠**
+
 
 [![JetBrains team project](http://jb.gg/badges/team.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![JetBrains IntelliJ Plugins](https://img.shields.io/jetbrains/plugin/v/9777-micropython)](https://plugins.jetbrains.com/plugin/9777-micropython)
@@ -6,9 +9,12 @@
 [![JetBrains IntelliJ Plugins](https://img.shields.io/jetbrains/plugin/r/rating/9777-micropython)](https://plugins.jetbrains.com/plugin/9777-micropython)
 [![Join the chat at https://gitter.im/intellij-micropython/community](https://badges.gitter.im/intellij-micropython/community.svg)](https://gitter.im/intellij-micropython/community)
 
+This project is a fork from the original [JetBrains IntelliJ Micropython plugin](https://github.com/JetBrains/intellij-micropython) project
+
+---
+
 The Python code development plugin for [MicroPython](http://micropython.org/) devices in
 [PyCharm](https://www.jetbrains.com/pycharm/) and [IntelliJ](https://www.jetbrains.com/idea/).
-
 
 ## Supported devices
 

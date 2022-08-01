@@ -1,8 +1,8 @@
 <idea-plugin url="https://github.com/vlasovskikh/intellij-micropython">
   <name>MicroPython</name>
-  <id>intellij-micropython</id>
+  <id>elomagic-micropython-plugin4pro</id>
   <change-notes><![CDATA[
-      <p>See <a href="https://github.com/vlasovskikh/intellij-micropython/blob/master/CHANGES.md">CHANGES.md</a> on GitHub.</p>
+      <p>See <a href="https://github.com/elomagic/micropython-plugin4pros/blob/master/CHANGES.md">CHANGES.md</a> on GitHub.</p>
     ]]></change-notes>
   <description><![CDATA[
       <p>Support for MicroPython devices in PyCharm and IntelliJ.</p>
@@ -19,7 +19,7 @@
         are welcome! See <a href="https://github.com/vlasovskikh/intellij-micropython">the project page</a> on GitHub.</p>
     ]]></description>
   <version>SNAPSHOT</version>
-  <vendor>JetBrains</vendor>
+  <vendor>elomagic</vendor>
 
   <depends>com.intellij.modules.lang</depends>
   <depends>com.intellij.modules.python</depends>
