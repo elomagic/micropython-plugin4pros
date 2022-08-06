@@ -28,27 +28,26 @@ import org.jetbrains.plugins.terminal.TerminalView
  * @author vlan
  */
 abstract class MicroPythonCommandAction : AnAction() {
-  override fun actionPerformed(e: AnActionEvent) {
-    val project = e.project ?: return
-    val facet = project.firstMicroPythonFacet ?: return
-    val command = getCommand(facet) ?: return
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val facet = project.firstMicroPythonFacet ?: return
+        val command = getCommand(facet) ?: return
 
-    TerminalView.getInstance(project).createNewSession(object : LocalTerminalDirectRunner(project) {
-      override fun getInitialCommand(envs: Map<String, String>): List<String> = command
-    })
-  }
-
-  override fun update(e: AnActionEvent) {
-    val project = e.project ?: return
-    val facet = project.firstMicroPythonFacet
-    if (facet != null) {
-      e.presentation.isEnabled = facet.checkValid() == ValidationResult.OK
+        TerminalView.getInstance(project).createNewSession(object : LocalTerminalDirectRunner(project) {
+            override fun getInitialCommand(envs: Map<String, String>): List<String> = command
+        })
     }
-    else {
-      e.presentation.isVisible = false
-      e.presentation.isEnabled = false
-    }
-  }
 
-  protected abstract fun getCommand(facet: MicroPythonFacet): List<String>?
+    override fun update(e: AnActionEvent) {
+        val project = e.project ?: return
+        val facet = project.firstMicroPythonFacet
+        if (facet != null) {
+            e.presentation.isEnabled = facet.checkValid() == ValidationResult.OK
+        } else {
+            e.presentation.isVisible = false
+            e.presentation.isEnabled = false
+        }
+    }
+
+    protected abstract fun getCommand(facet: MicroPythonFacet): List<String>?
 }

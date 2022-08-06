@@ -47,132 +47,137 @@ import javax.swing.JComponent
 /**
  * @author vlan
  */
-class MicroPythonFacet(facetType: FacetType<out Facet<*>, *>, module: Module, name: String,
-                       configuration: MicroPythonFacetConfiguration, underlyingFacet: Facet<*>?)
-  : LibraryContributingFacet<MicroPythonFacetConfiguration>(facetType, module, name, configuration, underlyingFacet) {
+class MicroPythonFacet(
+    facetType: FacetType<out Facet<*>, *>, module: Module, name: String,
+    configuration: MicroPythonFacetConfiguration, underlyingFacet: Facet<*>?
+) : LibraryContributingFacet<MicroPythonFacetConfiguration>(facetType, module, name, configuration, underlyingFacet) {
 
-  companion object {
-    private const val PLUGIN_ID = "intellij-micropython"
+    companion object {
+        private const val PLUGIN_ID = "intellij-micropython"
 
-    val scriptsPath: String
-      get() = "${pluginDescriptor.pluginPath}/scripts"
+        val scriptsPath: String
+            get() = "${pluginDescriptor.pluginPath}/scripts"
 
-    private val pluginDescriptor: IdeaPluginDescriptor
-      get() = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID)) ?:
-          throw RuntimeException("The $PLUGIN_ID plugin cannot find itself")
-  }
-
-  override fun initFacet() {
-    updateLibrary()
-  }
-
-  override fun updateLibrary() {
-    val plugin = pluginDescriptor
-    val boardHintsPaths = configuration.deviceProvider.typeHints?.paths?.map {
-      "${plugin.pluginPath}/typehints/$it"
-    } ?: emptyList()
-    FacetLibraryConfigurator.attachPythonLibrary(module, null, "MicroPython", boardHintsPaths)
-    removeLegacyLibraries()
-  }
-
-  override fun removeLibrary() {
-    FacetLibraryConfigurator.detachPythonLibrary(module, "MicroPython")
-  }
-
-  fun checkValid(): ValidationResult {
-    val provider = configuration.deviceProvider
-    val sdk = PythonSdkUtil.findPythonSdk(module)
-    if (sdk == null || PythonSdkUtil.isInvalid(sdk) || PythonSdkType.getLanguageLevelForSdk(sdk).isOlderThan(LanguageLevel.PYTHON35)) {
-      return ValidationResult("${provider.presentableName} support requires valid Python 3.5+ SDK")
+        private val pluginDescriptor: IdeaPluginDescriptor
+            get() = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))
+                ?: throw RuntimeException("The $PLUGIN_ID plugin cannot find itself")
     }
-    val packageManager = PyPackageManager.getInstance(sdk)
-    val packages = packageManager.packages ?: return ValidationResult.OK
-    val requirements = provider.getPackageRequirements(sdk).filter { it.match(packages) == null }.toList()
-    if (requirements.isNotEmpty()) {
-      val requirementsText = requirements.joinToString(", ") {
-        it.presentableText
-      }
-      return ValidationResult("Packages required for ${provider.presentableName} support not found: $requirementsText",
-                              object : FacetConfigurationQuickFix("Install Requirements") {
-        override fun run(place: JComponent?) {
-          PyPackageManagerUI(module.project, sdk, null).install(requirements, emptyList())
+
+    override fun initFacet() {
+        updateLibrary()
+    }
+
+    override fun updateLibrary() {
+        val plugin = pluginDescriptor
+        val boardHintsPaths = configuration.deviceProvider.typeHints?.paths?.map {
+            "${plugin.pluginPath}/typehints/$it"
+        } ?: emptyList()
+        FacetLibraryConfigurator.attachPythonLibrary(module, null, "MicroPython", boardHintsPaths)
+        removeLegacyLibraries()
+    }
+
+    override fun removeLibrary() {
+        FacetLibraryConfigurator.detachPythonLibrary(module, "MicroPython")
+    }
+
+    fun checkValid(): ValidationResult {
+        val provider = configuration.deviceProvider
+        val sdk = PythonSdkUtil.findPythonSdk(module)
+        if (sdk == null || PythonSdkUtil.isInvalid(sdk) || PythonSdkType.getLanguageLevelForSdk(sdk)
+                .isOlderThan(LanguageLevel.PYTHON35)
+        ) {
+            return ValidationResult("${provider.presentableName} support requires valid Python 3.5+ SDK")
         }
-      })
-    }
-    return ValidationResult.OK
-  }
-
-  private fun findSerialPorts(deviceProvider: MicroPythonDeviceProvider, indicator: ProgressIndicator): List<String> {
-    val timeout = 1_000
-    val pythonPath = pythonPath ?: return emptyList()
-    val ids = deviceProvider.usbIds.map { (vendor_id, product_id) -> "$vendor_id:$product_id" }
-    val command = listOf(pythonPath, "$scriptsPath/findusb.py") + ids
-    val process = CapturingProcessHandler(GeneralCommandLine(command))
-    val output = process.runProcessWithProgressIndicator(indicator, timeout)
-    return when {
-      output.isCancelled -> emptyList()
-      output.isTimeout -> emptyList()
-      output.exitCode != 0 -> emptyList()
-      else -> output.stdoutLines
-    }
-  }
-
-  val pythonPath: String?
-    get() = PythonSdkUtil.findPythonSdk(module)?.homePath
-
-  var devicePath: String?
-    get() = MicroPythonDevicesConfiguration.getInstance(module.project).devicePath.nullize(true)
-    set(value) {
-      MicroPythonDevicesConfiguration.getInstance(module.project).devicePath = value ?: ""
+        val packageManager = PyPackageManager.getInstance(sdk)
+        val packages = packageManager.packages ?: return ValidationResult.OK
+        val requirements = provider.getPackageRequirements(sdk).filter { it.match(packages) == null }.toList()
+        if (requirements.isNotEmpty()) {
+            val requirementsText = requirements.joinToString(", ") {
+                it.presentableText
+            }
+            return ValidationResult("Packages required for ${provider.presentableName} support not found: $requirementsText",
+                object : FacetConfigurationQuickFix("Install Requirements") {
+                    override fun run(place: JComponent?) {
+                        PyPackageManagerUI(module.project, sdk, null).install(requirements, emptyList())
+                    }
+                })
+        }
+        return ValidationResult.OK
     }
 
-  var autoDetectDevicePath: Boolean
-    get() = MicroPythonDevicesConfiguration.getInstance(module.project).autoDetectDevicePath
-    set(value) {
-      MicroPythonDevicesConfiguration.getInstance(module.project).autoDetectDevicePath = value
+    private fun findSerialPorts(deviceProvider: MicroPythonDeviceProvider, indicator: ProgressIndicator): List<String> {
+        val timeout = 1_000
+        val pythonPath = pythonPath ?: return emptyList()
+        val ids = deviceProvider.usbIds.map { (vendor_id, product_id) -> "$vendor_id:$product_id" }
+        val command = listOf(pythonPath, "$scriptsPath/findusb.py") + ids
+        val process = CapturingProcessHandler(GeneralCommandLine(command))
+        val output = process.runProcessWithProgressIndicator(indicator, timeout)
+        return when {
+            output.isCancelled -> emptyList()
+            output.isTimeout -> emptyList()
+            output.exitCode != 0 -> emptyList()
+            else -> output.stdoutLines
+        }
     }
 
-  fun getOrDetectDevicePathSynchronously(): String? =
-      if (autoDetectDevicePath)
-        detectDevicePathSynchronously(configuration.deviceProvider)
-      else
-        devicePath
+    val pythonPath: String?
+        get() = PythonSdkUtil.findPythonSdk(module)?.homePath
 
-  fun detectDevicePathSynchronously(deviceProvider: MicroPythonDeviceProvider): String? {
-    ApplicationManager.getApplication().assertIsDispatchThread()
+    var devicePath: String?
+        get() = MicroPythonDevicesConfiguration.getInstance(module.project).devicePath.nullize(true)
+        set(value) {
+            MicroPythonDevicesConfiguration.getInstance(module.project).devicePath = value ?: ""
+        }
 
-    var detectedDevicePath: String? = null
-    val deviceProviderName = deviceProvider.presentableName
-    val progress = ProgressManager.getInstance()
+    var autoDetectDevicePath: Boolean
+        get() = MicroPythonDevicesConfiguration.getInstance(module.project).autoDetectDevicePath
+        set(value) {
+            MicroPythonDevicesConfiguration.getInstance(module.project).autoDetectDevicePath = value
+        }
 
-    progress.runProcessWithProgressSynchronously({
-      progress.progressIndicator.text = "Detecting connected $deviceProviderName devices..."
-      val detected = findSerialPorts(deviceProvider, progress.progressIndicator).firstOrNull()
-      ApplicationManager.getApplication().invokeLater {
-        if (detected == null) {
-          Messages.showErrorDialog(module.project,
-              """Possible solutions:
+    fun getOrDetectDevicePathSynchronously(): String? =
+        if (autoDetectDevicePath)
+            detectDevicePathSynchronously(configuration.deviceProvider)
+        else
+            devicePath
+
+    fun detectDevicePathSynchronously(deviceProvider: MicroPythonDeviceProvider): String? {
+        ApplicationManager.getApplication().assertIsDispatchThread()
+
+        var detectedDevicePath: String? = null
+        val deviceProviderName = deviceProvider.presentableName
+        val progress = ProgressManager.getInstance()
+
+        progress.runProcessWithProgressSynchronously({
+            progress.progressIndicator.text = "Detecting connected $deviceProviderName devices..."
+            val detected = findSerialPorts(deviceProvider, progress.progressIndicator).firstOrNull()
+            ApplicationManager.getApplication().invokeLater {
+                if (detected == null) {
+                    Messages.showErrorDialog(
+                        module.project,
+                        """Possible solutions:
                 |
                 |- Check if your device is connected to your computer
                 |- Specify the device path manually in the IDE settings for MicroPython""".trimMargin(),
-              "No $deviceProviderName Devices Detected")
-        }
-        detectedDevicePath = detected
-      }
-    }, "Detecting MicroPython devices", true, module.project, null)
-    return detectedDevicePath
-  }
+                        "No $deviceProviderName Devices Detected"
+                    )
+                }
+                detectedDevicePath = detected
+            }
+        }, "Detecting MicroPython devices", true, module.project, null)
+        return detectedDevicePath
+    }
 
-  private fun removeLegacyLibraries() {
-    FacetLibraryConfigurator.detachPythonLibrary(module, "Micro:bit")
-  }
+    private fun removeLegacyLibraries() {
+        FacetLibraryConfigurator.detachPythonLibrary(module, "Micro:bit")
+    }
 }
 
 val Module.microPythonFacet: MicroPythonFacet?
-  get() = FacetManager.getInstance(this).getFacetByType(MicroPythonFacetType.ID)
+    get() = FacetManager.getInstance(this).getFacetByType(MicroPythonFacetType.ID)
 
 val Project.firstMicroPythonFacet: MicroPythonFacet?
-  get() = ModuleManager.getInstance(this).modules
-      .asSequence()
-      .map { it.microPythonFacet }
-      .firstOrNull()
+    get() = ModuleManager.getInstance(this).modules
+        .asSequence()
+        .map { it.microPythonFacet }
+        .firstOrNull()

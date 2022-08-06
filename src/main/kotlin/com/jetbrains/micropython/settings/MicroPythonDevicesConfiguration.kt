@@ -14,19 +14,21 @@ import com.intellij.util.xmlb.annotations.Attribute
 @State(name = "MicroPythonDevices", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
 class MicroPythonDevicesConfiguration : PersistentStateComponent<MicroPythonDevicesConfiguration> {
 
-  companion object {
-    fun getInstance(project: Project): MicroPythonDevicesConfiguration =
-      project.getService(MicroPythonDevicesConfiguration::class.java)
-  }
+    companion object {
+        fun getInstance(project: Project): MicroPythonDevicesConfiguration =
+            project.getService(MicroPythonDevicesConfiguration::class.java)
+    }
 
-  // Currently, the device path is stored per project, not per module
-  @Attribute var devicePath: String = ""
+    // Currently, the device path is stored per project, not per module
+    @Attribute
+    var devicePath: String = ""
 
-  @Attribute var autoDetectDevicePath: Boolean = true
+    @Attribute
+    var autoDetectDevicePath: Boolean = true
 
-  override fun getState() = this
+    override fun getState() = this
 
-  override fun loadState(state: MicroPythonDevicesConfiguration) {
-    XmlSerializerUtil.copyBean(state, this)
-  }
+    override fun loadState(state: MicroPythonDevicesConfiguration) {
+        XmlSerializerUtil.copyBean(state, this)
+    }
 }

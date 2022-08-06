@@ -28,25 +28,28 @@ import org.jdom.Element
  * @author vlan
  */
 class MicroPythonFacetConfiguration : FacetConfiguration {
-  var deviceProvider = MicroPythonDeviceProvider.default
+    var deviceProvider = MicroPythonDeviceProvider.default
 
-  override fun createEditorTabs(editorContext: FacetEditorContext, validatorsManager: FacetValidatorsManager): Array<FacetEditorTab> {
-    val facet = editorContext.facet as MicroPythonFacet
-    validatorsManager.registerValidator(object: FacetEditorValidator() {
-      override fun check() = facet.checkValid()
-    })
-    return arrayOf(MicroPythonFacetEditorTab(this, facet))
-  }
+    override fun createEditorTabs(
+        editorContext: FacetEditorContext,
+        validatorsManager: FacetValidatorsManager
+    ): Array<FacetEditorTab> {
+        val facet = editorContext.facet as MicroPythonFacet
+        validatorsManager.registerValidator(object : FacetEditorValidator() {
+            override fun check() = facet.checkValid()
+        })
+        return arrayOf(MicroPythonFacetEditorTab(this, facet))
+    }
 
-  override fun readExternal(element: Element?) {
-    val deviceName = element?.getChild("device")?.getAttribute("name")?.value
-    val device = MicroPythonDeviceProvider.providers.firstOrNull { it.persistentName == deviceName }
-    deviceProvider = device ?: MicroPythonDeviceProvider.default
-  }
+    override fun readExternal(element: Element?) {
+        val deviceName = element?.getChild("device")?.getAttribute("name")?.value
+        val device = MicroPythonDeviceProvider.providers.firstOrNull { it.persistentName == deviceName }
+        deviceProvider = device ?: MicroPythonDeviceProvider.default
+    }
 
-  override fun writeExternal(element: Element?) {
-    val deviceElement = Element("device")
-    deviceElement.setAttribute("name", deviceProvider.persistentName)
-    element?.addContent(deviceElement)
-  }
+    override fun writeExternal(element: Element?) {
+        val deviceElement = Element("device")
+        deviceElement.setAttribute("name", deviceProvider.persistentName)
+        element?.addContent(deviceElement)
+    }
 }

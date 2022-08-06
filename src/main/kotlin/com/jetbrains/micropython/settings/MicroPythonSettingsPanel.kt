@@ -38,97 +38,99 @@ import javax.swing.JPanel
  * @author vlan
  */
 class MicroPythonSettingsPanel(private val module: Module) : JPanel() {
-  private val deviceTypeCombo = ComboBox(MicroPythonDeviceProvider.providers.toTypedArray())
-  private var docsHyperlink = object : ActionLink() {
-    var url = ""
+    private val deviceTypeCombo = ComboBox(MicroPythonDeviceProvider.providers.toTypedArray())
+    private var docsHyperlink = object : ActionLink() {
+        var url = ""
+
+        init {
+            addActionListener {
+                BrowserUtil.browse(url)
+            }
+        }
+    }
+    private val devicePath = TextFieldWithBrowseButton()
+    private val autoDetectDevicePath = CheckBox("Auto-detect device path").apply {
+        addActionListener {
+            update()
+        }
+    }
+
+    private val devicePathPanel: JPanel by lazy {
+        FormBuilder.createFormBuilder()
+            .addLabeledComponent("Device path:", JPanel(BorderLayout()).apply {
+                add(devicePath, BorderLayout.CENTER)
+                add(JButton("Detect").apply {
+                    addActionListener {
+                        devicePath.text = module.microPythonFacet?.detectDevicePathSynchronously(selectedProvider) ?: ""
+                    }
+                }, BorderLayout.EAST)
+            })
+            .panel
+    }
 
     init {
-      addActionListener {
-        BrowserUtil.browse(url)
-      }
-    }
-  }
-  private val devicePath = TextFieldWithBrowseButton()
-  private val autoDetectDevicePath = CheckBox("Auto-detect device path").apply {
-    addActionListener {
-      update()
-    }
-  }
+        layout = BorderLayout()
+        border = IdeBorderFactory.createEmptyBorder(UIUtil.PANEL_SMALL_INSETS)
 
-  private val devicePathPanel: JPanel by lazy {
-    FormBuilder.createFormBuilder()
-        .addLabeledComponent("Device path:", JPanel(BorderLayout()).apply {
-          add(devicePath, BorderLayout.CENTER)
-          add(JButton("Detect").apply {
-            addActionListener {
-              devicePath.text = module.microPythonFacet?.detectDevicePathSynchronously(selectedProvider) ?: ""
+        val contentPanel = FormBuilder.createFormBuilder()
+            .addLabeledComponent("Device type:", deviceTypeCombo)
+            .addComponent(autoDetectDevicePath)
+            .addComponent(devicePathPanel)
+            .addComponent(docsHyperlink)
+            .panel
+
+        add(contentPanel, BorderLayout.NORTH)
+
+        deviceTypeCombo.apply {
+            renderer = object : SimpleListCellRenderer<MicroPythonDeviceProvider>() {
+                override fun customize(
+                    list: JList<out MicroPythonDeviceProvider>, value: MicroPythonDeviceProvider?,
+                    index: Int, selected: Boolean, hasFocus: Boolean
+                ) {
+                    text = value?.presentableName ?: return
+                }
             }
-          }, BorderLayout.EAST)
-        })
-        .panel
-  }
-
-  init {
-    layout = BorderLayout()
-    border = IdeBorderFactory.createEmptyBorder(UIUtil.PANEL_SMALL_INSETS)
-
-    val contentPanel = FormBuilder.createFormBuilder()
-        .addLabeledComponent("Device type:", deviceTypeCombo)
-        .addComponent(autoDetectDevicePath)
-        .addComponent(devicePathPanel)
-        .addComponent(docsHyperlink)
-        .panel
-
-    add(contentPanel, BorderLayout.NORTH)
-
-    deviceTypeCombo.apply {
-      renderer = object: SimpleListCellRenderer<MicroPythonDeviceProvider>() {
-        override fun customize(list: JList<out MicroPythonDeviceProvider>, value: MicroPythonDeviceProvider?,
-                               index: Int, selected: Boolean, hasFocus: Boolean) {
-          text = value?.presentableName ?: return
+            addActionListener {
+                docsHyperlink.apply {
+                    url = selectedProvider.documentationURL
+                    text = "Learn more about setting up ${selectedProvider.presentableName} devices"
+                    repaint()
+                }
+            }
         }
-      }
-      addActionListener {
-        docsHyperlink.apply {
-          url = selectedProvider.documentationURL
-          text = "Learn more about setting up ${selectedProvider.presentableName} devices"
-          repaint()
+
+        devicePath.apply {
+            val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
+            addBrowseFolderListener("My Title", null, module.project, descriptor)
         }
-      }
+
+        update()
     }
 
-    devicePath.apply {
-      val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
-      addBrowseFolderListener("My Title", null, module.project, descriptor)
+    fun isModified(configuration: MicroPythonFacetConfiguration, facet: MicroPythonFacet): Boolean =
+        deviceTypeCombo.selectedItem != configuration.deviceProvider
+                || devicePath.text.nullize(true) != facet.devicePath
+                || autoDetectDevicePath.isSelected != facet.autoDetectDevicePath
+
+    fun getDisplayName(): String = "MicroPython"
+
+    fun apply(configuration: MicroPythonFacetConfiguration, facet: MicroPythonFacet) {
+        configuration.deviceProvider = selectedProvider
+        facet.devicePath = devicePath.text.nullize(true)
+        facet.autoDetectDevicePath = autoDetectDevicePath.isSelected
     }
 
-    update()
-  }
+    fun reset(configuration: MicroPythonFacetConfiguration, facet: MicroPythonFacet) {
+        deviceTypeCombo.selectedItem = configuration.deviceProvider
+        devicePath.text = facet.devicePath ?: ""
+        autoDetectDevicePath.isSelected = facet.autoDetectDevicePath
+        update()
+    }
 
-  fun isModified(configuration: MicroPythonFacetConfiguration, facet: MicroPythonFacet): Boolean =
-      deviceTypeCombo.selectedItem != configuration.deviceProvider
-          || devicePath.text.nullize(true) != facet.devicePath
-          || autoDetectDevicePath.isSelected != facet.autoDetectDevicePath
+    private fun update() {
+        UIUtil.setEnabled(devicePathPanel, !autoDetectDevicePath.isSelected, true)
+    }
 
-  fun getDisplayName(): String = "MicroPython"
-
-  fun apply(configuration: MicroPythonFacetConfiguration, facet: MicroPythonFacet) {
-    configuration.deviceProvider = selectedProvider
-    facet.devicePath = devicePath.text.nullize(true)
-    facet.autoDetectDevicePath = autoDetectDevicePath.isSelected
-  }
-
-  fun reset(configuration: MicroPythonFacetConfiguration, facet: MicroPythonFacet) {
-    deviceTypeCombo.selectedItem = configuration.deviceProvider
-    devicePath.text = facet.devicePath ?: ""
-    autoDetectDevicePath.isSelected = facet.autoDetectDevicePath
-    update()
-  }
-
-  private fun update() {
-    UIUtil.setEnabled(devicePathPanel, !autoDetectDevicePath.isSelected, true)
-  }
-
-  private val selectedProvider: MicroPythonDeviceProvider
-    get() = deviceTypeCombo.selectedItem as MicroPythonDeviceProvider
+    private val selectedProvider: MicroPythonDeviceProvider
+        get() = deviceTypeCombo.selectedItem as MicroPythonDeviceProvider
 }

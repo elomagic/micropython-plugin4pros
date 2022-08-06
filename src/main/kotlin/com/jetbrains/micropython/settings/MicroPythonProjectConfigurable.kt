@@ -24,8 +24,8 @@ import com.intellij.openapi.project.Project
 /**
  * @author vlan
  */
-class MicroPythonProjectConfigurable(project: Project)
-  : ModuleAwareProjectConfigurable<Configurable>(project, "MicroPython", null) {
+class MicroPythonProjectConfigurable(project: Project) :
+    ModuleAwareProjectConfigurable<Configurable>(project, "MicroPython", null) {
 
-  override fun createModuleConfigurable(module: Module?) = MicroPythonModuleConfigurable(module!!)
+    override fun createModuleConfigurable(module: Module?) = MicroPythonModuleConfigurable(module!!)
 }

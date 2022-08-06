@@ -22,24 +22,26 @@ import javax.swing.JComponent
 /**
  * @author vlan
  */
-class MicroPythonFacetEditorTab(val configuration: MicroPythonFacetConfiguration,
-                                private val facet: MicroPythonFacet) : FacetEditorTab() {
-  private val panel: MicroPythonSettingsPanel by lazy {
-    MicroPythonSettingsPanel(facet.module)
-  }
+class MicroPythonFacetEditorTab(
+    val configuration: MicroPythonFacetConfiguration,
+    private val facet: MicroPythonFacet
+) : FacetEditorTab() {
+    private val panel: MicroPythonSettingsPanel by lazy {
+        MicroPythonSettingsPanel(facet.module)
+    }
 
-  override fun isModified(): Boolean = panel.isModified(configuration, facet)
+    override fun isModified(): Boolean = panel.isModified(configuration, facet)
 
-  override fun getDisplayName(): String = panel.getDisplayName()
+    override fun getDisplayName(): String = panel.getDisplayName()
 
-  override fun createComponent(): JComponent = panel
+    override fun createComponent(): JComponent = panel
 
-  override fun apply() {
-    panel.apply(configuration, facet)
-    facet.updateLibrary()
-  }
+    override fun apply() {
+        panel.apply(configuration, facet)
+        facet.updateLibrary()
+    }
 
-  override fun reset() {
-    panel.reset(configuration, facet)
-  }
+    override fun reset() {
+        panel.reset(configuration, facet)
+    }
 }

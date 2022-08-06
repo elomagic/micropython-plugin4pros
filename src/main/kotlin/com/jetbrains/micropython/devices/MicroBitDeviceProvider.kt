@@ -32,38 +32,42 @@ import com.jetbrains.python.packaging.PyRequirement
  * @author vlan
  */
 class MicroBitDeviceProvider : MicroPythonDeviceProvider {
-  override val persistentName: String
-    get() = "Micro:bit"
+    override val persistentName: String
+        get() = "Micro:bit"
 
-  override val documentationURL: String
-    get() = "https://github.com/vlasovskikh/intellij-micropython/wiki/BBC-Micro:bit"
+    override val documentationURL: String
+        get() = "https://github.com/vlasovskikh/intellij-micropython/wiki/BBC-Micro:bit"
 
-  override val usbIds: List<MicroPythonUsbId>
-    get() = listOf(MicroPythonUsbId(0x0D28, 0x0204))
+    override val usbIds: List<MicroPythonUsbId>
+        get() = listOf(MicroPythonUsbId(0x0D28, 0x0204))
 
-  override fun getPackageRequirements(sdk: Sdk): List<PyRequirement> {
-    val manager = PyPackageManager.getInstance(sdk)
-    return manager.parseRequirements("""|uflash>=1.2.4,<1.3
+    override fun getPackageRequirements(sdk: Sdk): List<PyRequirement> {
+        val manager = PyPackageManager.getInstance(sdk)
+        return manager.parseRequirements(
+            """|uflash>=1.2.4,<1.3
                                         |docopt>=0.6.2,<0.7
-                                        |pyserial>=3.5,<4.0""".trimMargin())
-  }
-
-  override val typeHints: MicroPythonTypeHints by lazy {
-    MicroPythonTypeHints(listOf("microbit"))
-  }
-
-  override val detectedModuleNames: Set<String>
-    get() = linkedSetOf("microbit")
-
-  override fun getRunCommandLineState(configuration: MicroPythonRunConfiguration,
-                                      environment: ExecutionEnvironment): CommandLineState? {
-    val pythonPath = configuration.module?.microPythonFacet?.pythonPath ?: return null
-    return object : CommandLineState(environment) {
-      override fun startProcess() =
-          OSProcessHandler(GeneralCommandLine(pythonPath, "-m", "uflash", configuration.path))
+                                        |pyserial>=3.5,<4.0""".trimMargin()
+        )
     }
-  }
 
-  override val isDefault: Boolean
-    get() = true
+    override val typeHints: MicroPythonTypeHints by lazy {
+        MicroPythonTypeHints(listOf("microbit"))
+    }
+
+    override val detectedModuleNames: Set<String>
+        get() = linkedSetOf("microbit")
+
+    override fun getRunCommandLineState(
+        configuration: MicroPythonRunConfiguration,
+        environment: ExecutionEnvironment
+    ): CommandLineState? {
+        val pythonPath = configuration.module?.microPythonFacet?.pythonPath ?: return null
+        return object : CommandLineState(environment) {
+            override fun startProcess() =
+                OSProcessHandler(GeneralCommandLine(pythonPath, "-m", "uflash", configuration.path))
+        }
+    }
+
+    override val isDefault: Boolean
+        get() = true
 }

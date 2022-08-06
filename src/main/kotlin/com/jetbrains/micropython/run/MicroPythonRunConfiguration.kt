@@ -39,70 +39,74 @@ import org.jdom.Element
 /**
  * @author Mikhail Golubev
  */
-class MicroPythonRunConfiguration(project: Project, factory: ConfigurationFactory)
-  : AbstractRunConfiguration(project, factory), RunConfigurationWithSuppressedDefaultDebugAction {
+class MicroPythonRunConfiguration(project: Project, factory: ConfigurationFactory) :
+    AbstractRunConfiguration(project, factory), RunConfigurationWithSuppressedDefaultDebugAction {
 
-  var path: String = ""
+    var path: String = ""
 
-  override fun getValidModules() =
-      allModules.filter { it.microPythonFacet != null }.toMutableList()
+    override fun getValidModules() =
+        allModules.filter { it.microPythonFacet != null }.toMutableList()
 
-  override fun getConfigurationEditor() = MicroPythonRunConfigurationEditor(this)
+    override fun getConfigurationEditor() = MicroPythonRunConfigurationEditor(this)
 
-  override fun getState(executor: Executor, environment: ExecutionEnvironment) =
-      module?.microPythonFacet?.configuration?.deviceProvider?.getRunCommandLineState(this, environment)
+    override fun getState(executor: Executor, environment: ExecutionEnvironment) =
+        module?.microPythonFacet?.configuration?.deviceProvider?.getRunCommandLineState(this, environment)
 
-  override fun checkConfiguration() {
-    super.checkConfiguration()
-    if (StringUtil.isEmpty(path)) {
-      throw RuntimeConfigurationError("Path is not specified")
+    override fun checkConfiguration() {
+        super.checkConfiguration()
+        if (StringUtil.isEmpty(path)) {
+            throw RuntimeConfigurationError("Path is not specified")
+        }
+        val m = module ?: throw RuntimeConfigurationError("Module for path is not found")
+        val showSettings = Runnable {
+            when {
+                PlatformUtils.isPyCharm() ->
+                    ShowSettingsUtil.getInstance()
+                        .showSettingsDialog(project, MicroPythonProjectConfigurable::class.java)
+
+                PlatformUtils.isIntelliJ() ->
+                    ProjectSettingsService.getInstance(project).openModuleSettings(module)
+
+                else ->
+                    ShowSettingsUtil.getInstance().showSettingsDialog(project)
+            }
+        }
+        val facet = m.microPythonFacet ?: throw RuntimeConfigurationError(
+            "MicroPython support is not enabled for selected module in IDE settings",
+            showSettings
+        )
+        val validationResult = facet.checkValid()
+        if (validationResult != ValidationResult.OK) {
+            val runQuickFix = Runnable {
+                validationResult.quickFix.run(null)
+            }
+            throw RuntimeConfigurationError(validationResult.errorMessage, runQuickFix)
+        }
+        facet.pythonPath ?: throw RuntimeConfigurationError("Python interpreter is not found")
+        if (!facet.autoDetectDevicePath && facet.devicePath == null) {
+            throw RuntimeConfigurationError("Device path is not specified in IDE settings", showSettings)
+        }
     }
-    val m = module ?: throw RuntimeConfigurationError("Module for path is not found")
-    val showSettings = Runnable {
-      when {
-        PlatformUtils.isPyCharm() ->
-          ShowSettingsUtil.getInstance().showSettingsDialog(project, MicroPythonProjectConfigurable::class.java)
-        PlatformUtils.isIntelliJ() ->
-          ProjectSettingsService.getInstance(project).openModuleSettings(module)
-        else ->
-          ShowSettingsUtil.getInstance().showSettingsDialog(project)
-      }
-    }
-    val facet = m.microPythonFacet ?: throw RuntimeConfigurationError(
-        "MicroPython support is not enabled for selected module in IDE settings",
-        showSettings)
-    val validationResult = facet.checkValid()
-    if (validationResult != ValidationResult.OK) {
-      val runQuickFix = Runnable {
-        validationResult.quickFix.run(null)
-      }
-      throw RuntimeConfigurationError(validationResult.errorMessage, runQuickFix)
-    }
-    facet.pythonPath ?: throw RuntimeConfigurationError("Python interpreter is not found")
-    if (!facet.autoDetectDevicePath && facet.devicePath == null) {
-      throw RuntimeConfigurationError("Device path is not specified in IDE settings", showSettings)
-    }
-  }
 
-  override fun suggestedName() = "Flash ${PathUtil.getFileName(path)}"
+    override fun suggestedName() = "Flash ${PathUtil.getFileName(path)}"
 
-  override fun writeExternal(element: Element) {
-    super.writeExternal(element)
-    element.setAttribute("path", path)
-  }
-
-  override fun readExternal(element: Element) {
-    super.readExternal(element)
-    configurationModule.readExternal(element)
-    element.getAttributeValue("path")?.let {
-      path = it
+    override fun writeExternal(element: Element) {
+        super.writeExternal(element)
+        element.setAttribute("path", path)
     }
-  }
 
-  val module: Module?
-    get() {
-      val file = StandardFileSystems.local().findFileByPath(path) ?: return null
-      return ModuleUtil.findModuleForFile(file, project)
+    override fun readExternal(element: Element) {
+        super.readExternal(element)
+        configurationModule.readExternal(element)
+        element.getAttributeValue("path")?.let {
+            path = it
+        }
     }
+
+    val module: Module?
+        get() {
+            val file = StandardFileSystems.local().findFileByPath(path) ?: return null
+            return ModuleUtil.findModuleForFile(file, project)
+        }
 }
 

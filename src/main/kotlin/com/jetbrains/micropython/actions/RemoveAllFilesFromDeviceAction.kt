@@ -22,9 +22,9 @@ import com.jetbrains.micropython.settings.MicroPythonFacet
  * @author vlan
  */
 class RemoveAllFilesFromDeviceAction : MicroPythonCommandAction() {
-  override fun getCommand(facet: MicroPythonFacet): List<String>? {
-    val pythonPath = facet.pythonPath ?: return null
-    val devicePath = facet.getOrDetectDevicePathSynchronously() ?: return null
-    return listOf(pythonPath, "${MicroPythonFacet.scriptsPath}/microcleanfs.py", devicePath)
-  }
+    override fun getCommand(facet: MicroPythonFacet): List<String>? {
+        val pythonPath = facet.pythonPath ?: return null
+        val devicePath = facet.getOrDetectDevicePathSynchronously() ?: return null
+        return listOf(pythonPath, "${MicroPythonFacet.scriptsPath}/microcleanfs.py", devicePath)
+    }
 }

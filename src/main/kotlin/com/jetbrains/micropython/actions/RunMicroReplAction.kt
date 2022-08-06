@@ -22,9 +22,9 @@ import com.jetbrains.micropython.settings.MicroPythonFacet
  * @author Mikhail Golubev
  */
 class RunMicroReplAction : MicroPythonCommandAction() {
-  override fun getCommand(facet: MicroPythonFacet): List<String>? {
-    val pythonPath = facet.pythonPath ?: return null
-    val devicePath = facet.getOrDetectDevicePathSynchronously() ?: return null
-    return listOf(pythonPath, "${MicroPythonFacet.scriptsPath}/microrepl.py", devicePath)
-  }
+    override fun getCommand(facet: MicroPythonFacet): List<String>? {
+        val pythonPath = facet.pythonPath ?: return null
+        val devicePath = facet.getOrDetectDevicePathSynchronously() ?: return null
+        return listOf(pythonPath, "${MicroPythonFacet.scriptsPath}/microrepl.py", devicePath)
+    }
 }

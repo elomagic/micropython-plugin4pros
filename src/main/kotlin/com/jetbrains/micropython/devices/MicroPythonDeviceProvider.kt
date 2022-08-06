@@ -29,38 +29,40 @@ import com.jetbrains.python.packaging.PyRequirement
  * @author vlan
  */
 interface MicroPythonDeviceProvider {
-  companion object {
-    private val EP_NAME: ExtensionPointName<MicroPythonDeviceProvider> =
-        ExtensionPointName.create("com.jetbrains.micropython.deviceProvider")
+    companion object {
+        private val EP_NAME: ExtensionPointName<MicroPythonDeviceProvider> =
+            ExtensionPointName.create("com.jetbrains.micropython.deviceProvider")
 
-    val providers: List<MicroPythonDeviceProvider>
-      get() = EP_NAME.extensionList
+        val providers: List<MicroPythonDeviceProvider>
+            get() = EP_NAME.extensionList
 
-    val default: MicroPythonDeviceProvider
-      get() = providers.first { it.isDefault }
-  }
+        val default: MicroPythonDeviceProvider
+            get() = providers.first { it.isDefault }
+    }
 
-  val persistentName: String
+    val persistentName: String
 
-  val documentationURL: String
+    val documentationURL: String
 
-  val usbIds: List<MicroPythonUsbId>
-    get() = emptyList()
+    val usbIds: List<MicroPythonUsbId>
+        get() = emptyList()
 
-  val presentableName: String
-    get() = persistentName
+    val presentableName: String
+        get() = persistentName
 
-  fun getPackageRequirements(sdk: Sdk): List<PyRequirement> = emptyList()
+    fun getPackageRequirements(sdk: Sdk): List<PyRequirement> = emptyList()
 
-  val typeHints: MicroPythonTypeHints?
-    get() = null
+    val typeHints: MicroPythonTypeHints?
+        get() = null
 
-  val detectedModuleNames: Set<String>
-    get() = emptySet()
+    val detectedModuleNames: Set<String>
+        get() = emptySet()
 
-  fun getRunCommandLineState(configuration: MicroPythonRunConfiguration,
-                             environment: ExecutionEnvironment): CommandLineState? = null
+    fun getRunCommandLineState(
+        configuration: MicroPythonRunConfiguration,
+        environment: ExecutionEnvironment
+    ): CommandLineState? = null
 
-  val isDefault: Boolean
-    get() = false
+    val isDefault: Boolean
+        get() = false
 }

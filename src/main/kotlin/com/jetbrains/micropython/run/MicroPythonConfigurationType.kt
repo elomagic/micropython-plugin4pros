@@ -29,25 +29,25 @@ import javax.swing.Icon
  * @author Mikhail Golubev
  */
 class MicroPythonConfigurationType : ConfigurationType {
-  companion object {
-    fun getInstance(): MicroPythonConfigurationType =
-        ConfigurationTypeUtil.findConfigurationType(MicroPythonConfigurationType::class.java)
-  }
-  
-  internal val factory = object : PythonConfigurationFactoryBase(this) {
-    override fun createTemplateConfiguration(project: Project): RunConfiguration =
-        MicroPythonRunConfiguration(project, this)
+    companion object {
+        fun getInstance(): MicroPythonConfigurationType =
+            ConfigurationTypeUtil.findConfigurationType(MicroPythonConfigurationType::class.java)
+    }
 
-    override fun getId(): String = "MicroPython"
-  }
+    internal val factory = object : PythonConfigurationFactoryBase(this) {
+        override fun createTemplateConfiguration(project: Project): RunConfiguration =
+            MicroPythonRunConfiguration(project, this)
 
-  override fun getIcon(): Icon = MicroPythonFacetType.LOGO
+        override fun getId(): String = "MicroPython"
+    }
 
-  override fun getConfigurationTypeDescription(): String = "MicroPython run configuration"
+    override fun getIcon(): Icon = MicroPythonFacetType.LOGO
 
-  override fun getId(): String = "MicroPythonConfigurationType"
+    override fun getConfigurationTypeDescription(): String = "MicroPython run configuration"
 
-  override fun getDisplayName(): String = "MicroPython"
+    override fun getId(): String = "MicroPythonConfigurationType"
 
-  override fun getConfigurationFactories(): Array<ConfigurationFactory> = arrayOf(factory)
+    override fun getDisplayName(): String = "MicroPython"
+
+    override fun getConfigurationFactories(): Array<ConfigurationFactory> = arrayOf(factory)
 }

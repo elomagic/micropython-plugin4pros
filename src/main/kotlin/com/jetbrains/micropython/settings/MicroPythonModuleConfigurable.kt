@@ -30,82 +30,80 @@ import javax.swing.JPanel
  * @author vlan
  */
 class MicroPythonModuleConfigurable(private val module: Module) : Configurable {
-  private val panel: MicroPythonSettingsPanel by lazy {
-    MicroPythonSettingsPanel(module)
-  }
-
-  private val enabledCheckbox by lazy {
-    val checkBox = JCheckBox("Enable MicroPython support")
-    checkBox.addActionListener {
-      update()
+    private val panel: MicroPythonSettingsPanel by lazy {
+        MicroPythonSettingsPanel(module)
     }
-    checkBox
-  }
 
-  override fun isModified(): Boolean {
-    val facet = module.microPythonFacet
-    val enabled = facet != null
-
-    if (enabledCheckbox.isSelected != enabled) return true
-    val c = facet?.configuration ?: return false
-    return panel.isModified(c, facet)
-  }
-
-  override fun getDisplayName() = "MicroPython"
-
-  override fun apply() {
-    val facet = module.microPythonFacet
-    val application = ApplicationManager.getApplication()
-    val facetManager = FacetManager.getInstance(module)
-
-    if (enabledCheckbox.isSelected) {
-      if (facet != null) {
-        panel.apply(facet.configuration, facet)
-        FacetManager.getInstance(module).facetConfigurationChanged(facet)
-        facet.updateLibrary()
-      }
-      else {
-        val facetType = MicroPythonFacetType.getInstance()
-        val newFacet = facetManager.createFacet(facetType, facetType.defaultFacetName, null)
-        panel.apply(newFacet.configuration, newFacet)
-
-        val facetModel = facetManager.createModifiableModel()
-        facetModel.addFacet(newFacet)
-        application.runWriteAction { facetModel.commit() }
-      }
+    private val enabledCheckbox by lazy {
+        val checkBox = JCheckBox("Enable MicroPython support")
+        checkBox.addActionListener {
+            update()
+        }
+        checkBox
     }
-    else if (facet != null) {
-      val facetModel = facetManager.createModifiableModel()
-      facetModel.removeFacet(facet)
-      application.runWriteAction { facetModel.commit() }
+
+    override fun isModified(): Boolean {
+        val facet = module.microPythonFacet
+        val enabled = facet != null
+
+        if (enabledCheckbox.isSelected != enabled) return true
+        val c = facet?.configuration ?: return false
+        return panel.isModified(c, facet)
     }
-  }
 
-  override fun createComponent(): JComponent {
-    val mainPanel = JPanel()
-    with(mainPanel) {
-      layout = BorderLayout()
-      add(enabledCheckbox, BorderLayout.NORTH)
-      add(panel, BorderLayout.CENTER)
+    override fun getDisplayName() = "MicroPython"
+
+    override fun apply() {
+        val facet = module.microPythonFacet
+        val application = ApplicationManager.getApplication()
+        val facetManager = FacetManager.getInstance(module)
+
+        if (enabledCheckbox.isSelected) {
+            if (facet != null) {
+                panel.apply(facet.configuration, facet)
+                FacetManager.getInstance(module).facetConfigurationChanged(facet)
+                facet.updateLibrary()
+            } else {
+                val facetType = MicroPythonFacetType.getInstance()
+                val newFacet = facetManager.createFacet(facetType, facetType.defaultFacetName, null)
+                panel.apply(newFacet.configuration, newFacet)
+
+                val facetModel = facetManager.createModifiableModel()
+                facetModel.addFacet(newFacet)
+                application.runWriteAction { facetModel.commit() }
+            }
+        } else if (facet != null) {
+            val facetModel = facetManager.createModifiableModel()
+            facetModel.removeFacet(facet)
+            application.runWriteAction { facetModel.commit() }
+        }
     }
-    update()
-    return mainPanel
-  }
 
-  override fun reset() {
-    val facet = module.microPythonFacet
-    val enabled = facet != null
-
-    enabledCheckbox.isSelected = enabled
-    panel.isEnabled = enabled
-    update()
-
-    if (facet != null) {
-      panel.reset(facet.configuration, facet)
+    override fun createComponent(): JComponent {
+        val mainPanel = JPanel()
+        with(mainPanel) {
+            layout = BorderLayout()
+            add(enabledCheckbox, BorderLayout.NORTH)
+            add(panel, BorderLayout.CENTER)
+        }
+        update()
+        return mainPanel
     }
-  }
 
-  private fun update() {
-    UIUtil.setEnabled(panel, enabledCheckbox.isSelected, true)
-  }
+    override fun reset() {
+        val facet = module.microPythonFacet
+        val enabled = facet != null
+
+        enabledCheckbox.isSelected = enabled
+        panel.isEnabled = enabled
+        update()
+
+        if (facet != null) {
+            panel.reset(facet.configuration, facet)
+        }
+    }
+
+    private fun update() {
+        UIUtil.setEnabled(panel, enabledCheckbox.isSelected, true)
+    }
 }

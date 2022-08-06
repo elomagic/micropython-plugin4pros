@@ -24,28 +24,31 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.util.ui.FormBuilder
 import javax.swing.JComponent
 
-class MicroPythonRunConfigurationEditor(config: MicroPythonRunConfiguration) : SettingsEditor<MicroPythonRunConfiguration>() {
-  private val pathField = TextFieldWithBrowseButton()
+class MicroPythonRunConfigurationEditor(config: MicroPythonRunConfiguration) :
+    SettingsEditor<MicroPythonRunConfiguration>() {
+    private val pathField = TextFieldWithBrowseButton()
 
-  init {
-    val descriptor = FileChooserDescriptor(true, true, false, false, false, false)
-    val listener = ComponentWithBrowseButton.BrowseFolderActionListener("Select Path", "",
-                                                                        pathField,
-                                                                        config.project, descriptor,
-                                                                        TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT)
-    pathField.addActionListener(listener)
-  }
+    init {
+        val descriptor = FileChooserDescriptor(true, true, false, false, false, false)
+        val listener = ComponentWithBrowseButton.BrowseFolderActionListener(
+            "Select Path", "",
+            pathField,
+            config.project, descriptor,
+            TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT
+        )
+        pathField.addActionListener(listener)
+    }
 
-  override fun createEditor(): JComponent =
-      FormBuilder.createFormBuilder()
-          .addLabeledComponent("Path:", pathField)
-          .panel
+    override fun createEditor(): JComponent =
+        FormBuilder.createFormBuilder()
+            .addLabeledComponent("Path:", pathField)
+            .panel
 
-  override fun applyEditorTo(s: MicroPythonRunConfiguration) {
-    s.path = pathField.text
-  }
+    override fun applyEditorTo(s: MicroPythonRunConfiguration) {
+        s.path = pathField.text
+    }
 
-  override fun resetEditorFrom(s: MicroPythonRunConfiguration) {
-    pathField.text = s.path
-  }
+    override fun resetEditorFrom(s: MicroPythonRunConfiguration) {
+        pathField.text = s.path
+    }
 }
